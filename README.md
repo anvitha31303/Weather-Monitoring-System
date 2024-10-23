@@ -94,6 +94,8 @@ Users can define a temperature threshold for each city. The system continuously 
 **API Key Management: API keys used for fetching data from OpenWeatherMap are stored in environment variables using dotenv. This ensures that sensitive information (API keys, database credentials) is not hardcoded in the application and reduces the risk of leakage.
 
 **Database Connection Security: By default, SQLAlchemy handles secure connections to the database, but can configure SSL for PostgreSQL to ensure encrypted connections.
+**Background Task Scheduling: The weather data fetching is handled in the background using APScheduler, ensuring that the main application remains responsive. The scheduler can be tuned to optimize performance (fetching data at appropriate intervals).
+
 **Horizontal Scaling: FastAPI can handle high loads and concurrent requests efficiently, especially if deployed with a production-grade ASGI server like uvicorn.
 **Error Handling: The application includes proper error handling for API calls and database operations. This ensures that if something goes wrong (e.g., network failure or incorrect API responses), the system fails gracefully.
 
