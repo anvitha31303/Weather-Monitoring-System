@@ -89,6 +89,14 @@ Dominant Weather Condition: Based on the frequency of weather conditions (e.g., 
 2. Threshold Alerts:
 Users can define a temperature threshold for each city. The system continuously tracks weather updates, and if a city's temperature exceeds the set threshold, it triggers an alert, which is logged on the console.
 
+----Non-Functional Things
+###Security Enhancements:
+**API Key Management: API keys used for fetching data from OpenWeatherMap are stored in environment variables using dotenv. This ensures that sensitive information (API keys, database credentials) is not hardcoded in the application and reduces the risk of leakage.
+
+**Database Connection Security: By default, SQLAlchemy handles secure connections to the database, but can configure SSL for PostgreSQL to ensure encrypted connections.
+**Horizontal Scaling: FastAPI can handle high loads and concurrent requests efficiently, especially if deployed with a production-grade ASGI server like uvicorn.
+**Error Handling: The application includes proper error handling for API calls and database operations. This ensures that if something goes wrong (e.g., network failure or incorrect API responses), the system fails gracefully.
+
 ---Non-Technical Parts
 #My Approach
 Step 1: Understanding Requirements: The first step was to understand the core problem: building a real-time weather monitoring system that fetches, processes, and stores weather data while providing meaningful insights.
