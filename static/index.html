@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Monitoring</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        label {
+            margin-top: 10px;
+            display: block;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 5px 0 15px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px; /* Space between buttons */
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .output {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 5px;
+            display: none; /* Initially hidden */
+        }
+        .alert {
+            color: red;
+        }
+        .summary {
+            margin-top: 20px;
+            display: none; /* Initially hidden */
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Weather Monitoring</h1>
+    <div class="container">
+
+        <!-- Input field for setting thresholds -->
+        <label for="city-input">Enter City for Threshold:</label>
+        <input type="text" id="city-input" placeholder="e.g., Hyderabad">
+
+        <label for="threshold-input">Set Temperature Threshold:</label>
+        <input type="number" id="threshold-input" placeholder="Max Temp (°C)">
+
+        <button id="set-threshold">Set Threshold</button>
+        <button id="get-thresholds">Get Current Thresholds</button>
+
+        <hr>
+
+        <!-- Input field for fetching daily summary -->
+        <label for="summary-input">Enter City for Daily Summary:</label>
+        <input type="text" id="summary-input" placeholder="e.g., Chennai">
+        <button id="get-summary">Get Daily Summary</button>
+
+        <button id="fetch-weather">Fetch Weather Data</button>
+
+        <div id="weather-data" class="output"></div>
+        <div id="threshold-data" class="output"></div> <!-- Div to display current thresholds -->
+        <div id="summary-data" class="summary"></div>    <!-- Div to display daily summary -->
+
+    </div>
+
+    <script>
+    // Function to fetch weather data
+    document.getElementById("fetch-weather").onclick = function() {
+        fetch("/fetch_weather/", {
+            method: "POST"
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Network response was not ok " + response.statusText);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.data && data.data.length > 0) {
+                let weatherOutput = '<h2>Weather Data Fetched!</h2><ul>';
+                data.data.forEach(record => {
+                    weatherOutput += `<li>${record.city}: ${record.main_weather}, Temp: ${record.temp_celsius.toFixed(2)}°C, Feels Like: ${record.feels_like.toFixed(2)}°C, Timestamp: ${record.timestamp}</li>`;
+                });
+                weatherOutput += '</ul>';
+                document.getElementById("weather-data").innerHTML = weatherOutput;
+            } else {
+                document.getElementById("weather-data").innerHTML = '<h2>No weather data fetched.</h2>';
+            }
+            document.getElementById("weather-data").style.display = "block";
+            // Clear input fields after fetching weather data
+            document.getElementById("city-input").value = '';
+            document.getElementById("threshold-input").value = '';
+        })
+        .catch(error => {
+            document.getElementById("weather-data").innerHTML = `<h2 class="alert">Error!</h2><pre>${error}</pre>`;
+            document.getElementById("weather-data").style.display = "block";
+        });
+    };
+
+    // Function to set temperature threshold
+    document.getElementById("set-threshold").onclick = function() {
+        const city = document.getElementById("city-input").value.trim();
+        const maxTemp = parseFloat(document.getElementById("threshold-input").value);
+
+        if (city && !isNaN(maxTemp)) {
+            fetch(`/set_threshold/`, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'  // Set the content type to JSON
+                },
+                body: JSON.stringify({ city: city, max_temp: maxTemp })  // Send data as JSON
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok " + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert(data.message);  // Display success message
+                // Clear input fields after setting threshold
+                document.getElementById("city-input").value = '';
+                document.getElementById("threshold-input").value = '';
+            })
+            .catch(error => {
+                alert(`Error setting threshold: ${error}`);
+            });
+        } else {
+            alert('Please enter a valid city and threshold temperature.');
+        }
+    };
+
+    // Function to get current thresholds
+    document.getElementById("get-thresholds").onclick = function() {
+        fetch("/get_thresholds/", {
+            method: "GET"
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Network response was not ok " + response.statusText);
+            }
+            return response.json();
+        })
+        .then(data => {
+            let thresholdOutput = '<h2>Current Thresholds:</h2><ul>';
+            for (const [city, temp] of Object.entries(data)) {
+                thresholdOutput += `<li>${city}: ${temp}°C</li>`;
+            }
+            thresholdOutput += '</ul>';
+            document.getElementById("threshold-data").innerHTML = thresholdOutput;
+            document.getElementById("threshold-data").style.display = "block"; // Show the thresholds
+        })
+        .catch(error => {
+            alert(`Error fetching thresholds: ${error}`);
+        });
+    };
+
+    // Function to get daily summary
+    document.getElementById("get-summary").onclick = function() {
+        const city = document.getElementById("summary-input").value.trim(); // Get city from summary input
+
+        if (city) {
+            fetch(`/daily_summary/${city}`, {
+                method: "GET"
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok " + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data && typeof data === 'object') {
+                        let summaryOutput = `<h2>Daily Summary for ${city}</h2>`;
+                        for (const [key, value] of Object.entries(data)) {
+                            summaryOutput += `<p><strong>${key}:</strong> ${value}</p>`;
+                        }
+                        document.getElementById("summary-data").innerHTML = summaryOutput;
+                    } else {
+                        document.getElementById("summary-data").innerHTML = '<h2>No summary data available.</h2>';
+                    }
+                    document.getElementById("summary-data").style.display = "block";
+                })
+                .catch(error => {
+                    document.getElementById("summary-data").innerHTML = `<h2 class="alert">Error!</h2><pre>${error}</pre>`;
+                    document.getElementById("summary-data").style.display = "block";
+                });
+            } else {
+                alert('Please enter a city to get the summary.');
+            }
+        };
+    </script>
+
+</body>
+</html>
