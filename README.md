@@ -40,9 +40,8 @@ The system uses the following FastAPI routes for handling user interactions:
 ---About Solution
 ####Overview
 This project solves the problem of real-time weather monitoring and data aggregation. The key features include:
-
-# Real-time Weather Data:  Retrieves and processes weather data from OpenWeatherMap for major Indian cities.
-# Daily Summaries:  Provides daily rollups (average, max, min temperature) and aggregates (dominant weather condition).
+#Real-time Weather Data:  Retrieves and processes weather data from OpenWeatherMap for major Indian cities.
+#Daily Summaries:  Provides daily rollups (average, max, min temperature) and aggregates (dominant weather condition).
 #Threshold Alerts: Users can define temperature thresholds for cities, and alerts are triggered if the threshold is breached.
 
 ----API Routes
